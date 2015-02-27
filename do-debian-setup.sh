@@ -1,6 +1,3 @@
-adduser --disabled-password --gecos "" deployer
-mkdir /home/deployer/.ssh
-echo "$1" > /home/deployer/.ssh/authorized_keys
-chmod 700 /home/deployer/.ssh
-chmod 600 /home/deployer/.ssh/authorized_keys
-chown deployer:deployer /home/deployer/.ssh /home/deployer/.ssh/authorized_keys
+ssh root@$1 'adduser deployer && adduser deployer sudo'
+ssh deployer@$1 'ssh-keygen'
+scp ~/.ssh/id_rsa.pub deployer@$1:"~/.ssh/authorized_keys"
