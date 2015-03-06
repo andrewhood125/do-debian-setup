@@ -10,6 +10,7 @@ What it does
  - Add user `deployer:password` with sudo
  - Expire deployers password
  - Copy roots authorized keys to deployer
+ - PermitRootLogin no
 
 Usage
 -----

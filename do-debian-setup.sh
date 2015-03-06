@@ -22,7 +22,9 @@ ssh root@$1 'echo "Updating..." && \
   cp /root/.ssh/authorized_keys /home/deployer/.ssh/ || : && \
   chmod 600 /home/deployer/.ssh/authorized_keys || : && \
   chown -R deployer:deployer /home/deployer/.ssh && \
-  chmod 700 /home/deployer/.ssh'
+  chmod 700 /home/deployer/.ssh && \
+  sed -i '"'"'s/PermitRootLogin yes/PermitRootLogin no/g'"'"' /etc/ssh/sshd_config && \
+  service ssh reload'
 
 if [[ "$?" != "0" ]] ; then
   echo "Something went wrong with the install..."
