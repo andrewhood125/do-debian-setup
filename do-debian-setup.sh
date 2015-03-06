@@ -11,6 +11,7 @@ fi
 ssh root@$1 'echo "Updating..." && \
   apt-get update -qq && \
   echo "Upgrading..." && \
+  DEBIAN_FRONTEND=noninteractive && \
   apt-get upgrade -qq -y && \
   echo "Installing '"${PACKAGES[@]}"'..." && \
   apt-get install -qq -y '"${PACKAGES[@]}"' && \
