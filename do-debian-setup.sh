@@ -14,15 +14,14 @@ ssh root@$1 'echo "Updating..." && \
   apt-get upgrade -qq -y && \
   echo "Installing '"${PACKAGES[@]}"'..." && \
   apt-get install -qq -y '"${PACKAGES[@]}"' && \
-  echo "Setup deployer user..." && \
   adduser deployer --disabled-password --gecos "" && \
   adduser deployer sudo && \
   echo "deployer:password" | chpasswd && \
   passwd -e deployer && \
   mkdir /home/deployer/.ssh && \
-  cp /root/.ssh/authorized_keys /home/deployer/.ssh/ && \
+  cp /root/.ssh/authorized_keys /home/deployer/.ssh/ || : && \
+  chmod 600 /home/deployer/.ssh/authorized_keys || : && \
   chown -R deployer:deployer /home/deployer/.ssh && \
-  chmod 600 /home/deployer/.ssh/authorized_keys && \
   chmod 700 /home/deployer/.ssh'
 
 if [[ "$?" != "0" ]] ; then
