@@ -27,7 +27,7 @@ ssh root@$1 'echo "Updating..." && \
   service ssh reload &>> /var/log/do-debian-setup.txt'
 
 if [[ "$?" != "0" ]] ; then
-  echo "Something went wrong with the install..."
+  echo -e "\nSomething went wrong with the install..."
   echo "You can check the log here:"
   echo -e "\tssh root@$1 'cat /var/log/do-debian-setup.txt'"
   exit 2
