@@ -17,6 +17,4 @@ What it does
 Usage
 -----
 From your development machine run..  
-`curl -sS
-https://raw.githubusercontent.com/andrewhood125/do-debian-setup/master/do-debian-setup.sh
-| bash -s DROPLET_IP_ADDR`
+`bash <(curl -sSL http://git.io/pq7F) DROPLET_IP_ADDR`
