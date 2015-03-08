@@ -19,8 +19,8 @@ ssh root@$1 'echo "Updating..." && \
   echo "deployer:password" | chpasswd && \
   passwd -e deployer &>> /var/log/do-debian-setup.txt && \
   mkdir /home/deployer/.ssh && \
-  cp /root/.ssh/authorized_keys /home/deployer/.ssh/ || : && \
-  chmod 600 /home/deployer/.ssh/authorized_keys || : && \
+  cp /root/.ssh/authorized_keys /home/deployer/.ssh/ && \
+  chmod 600 /home/deployer/.ssh/authorized_keys && \
   chown -R deployer:deployer /home/deployer/.ssh && \
   chmod 700 /home/deployer/.ssh && \
   sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config && \
