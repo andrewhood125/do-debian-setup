@@ -9,23 +9,22 @@ if [[ "${1}x" == "x" ]] ; then
 fi
 
 ssh root@$1 'echo "Updating..." && \
-  apt-get update -qq && \
+  apt-get update &>> /var/log/do-debian-setup.txt && \
   echo "Upgrading..." && \
-  DEBIAN_FRONTEND=noninteractive && \
-  apt-get upgrade -qq -y && \
+  DEBIAN_FRONTEND=noninteractive apt-get upgrade -y &>> /var/log/do-debian-setup.txt && \
   echo "Installing '"${PACKAGES[@]}"'..." && \
-  apt-get install -qq -y '"${PACKAGES[@]}"' && \
-  adduser deployer --disabled-password --gecos "" && \
-  adduser deployer sudo && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y '"${PACKAGES[@]}"' &>> /var/log/do-debian-setup.txt && \
+  adduser deployer --disabled-password --gecos "" &>> /var/log/do-debian-setup.txt && \
+  adduser deployer sudo &>> /var/log/do-debian-setup.txt && \
   echo "deployer:password" | chpasswd && \
-  passwd -e deployer && \
+  passwd -e deployer &>> /var/log/do-debian-setup.txt && \
   mkdir /home/deployer/.ssh && \
   cp /root/.ssh/authorized_keys /home/deployer/.ssh/ || : && \
   chmod 600 /home/deployer/.ssh/authorized_keys || : && \
   chown -R deployer:deployer /home/deployer/.ssh && \
   chmod 700 /home/deployer/.ssh && \
-  sed -i '"'"'s/PermitRootLogin yes/PermitRootLogin no/g'"'"' /etc/ssh/sshd_config && \
-  service ssh reload'
+  sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config && \
+  service ssh reload &>> /var/log/do-debian-setup.txt'
 
 if [[ "$?" != "0" ]] ; then
   echo "Something went wrong with the install..."
