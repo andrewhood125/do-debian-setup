@@ -4,7 +4,7 @@ PACKAGES=(curl git htop vim)
 
 if [[ "${1}x" == "x" ]] ; then
   echo -e "\nSYNOPSIS"
-  echo -e "\t${BASH_SOURCE} [IP_ADDR | HOST_NAME]"
+  echo -e "\tdo-debian-setup.sh [IP_ADDR | HOST_NAME]"
   exit 1
 fi
 
