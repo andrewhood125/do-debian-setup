@@ -14,6 +14,7 @@ ssh root@$1 'echo "Updating..." && \
   DEBIAN_FRONTEND=noninteractive apt-get upgrade -y &>> /var/log/do-debian-setup.txt && \
   echo "Installing '"${PACKAGES[@]}"'..." && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y '"${PACKAGES[@]}"' &>> /var/log/do-debian-setup.txt && \
+  echo "Adding user deployer..."
   adduser deployer --disabled-password --gecos "" &>> /var/log/do-debian-setup.txt && \
   adduser deployer sudo &>> /var/log/do-debian-setup.txt && \
   echo "deployer:password" | chpasswd && \
@@ -23,6 +24,15 @@ ssh root@$1 'echo "Updating..." && \
   chmod 600 /home/deployer/.ssh/authorized_keys && \
   chown -R deployer:deployer /home/deployer/.ssh && \
   chmod 700 /home/deployer/.ssh && \
+  echo "Adding swap..."
+  sudo dd if=/dev/zero of=/swapfile bs=1024 count=1024k &>> /var/log/do-debian-setup.txt && \
+  sudo mkswap /swapfile &>> /var/log/do-debian-setup.txt && \
+  sudo swapon /swapfile
+  echo "/swapfile   none  swap  sw  0   0" >> /etc/fstab && \
+  echo 10 > /proc/sys/vm/swappiness && \
+  echo "vm.swappiness = 10" >> /etc/sysctl.conf && \
+  chown root:root /swapfile && \
+  chmod 0600 /swapfile && \
   sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config && \
   service ssh reload &>> /var/log/do-debian-setup.txt'
 
