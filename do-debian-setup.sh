@@ -33,8 +33,6 @@ echo "debconf for mariadb"
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password password $db_pw'"
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $db_pw'"
 
-echo $db_pw
-
 echo "Installing packages..."
 r "apt-get install --yes curl git htop vim mariadb-server build-essential"
 
