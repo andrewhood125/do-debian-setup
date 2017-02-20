@@ -8,42 +8,53 @@ if [[ "${1}x" == "x" ]] ; then
   exit 1
 fi
 
-ssh root@$1 'echo "Updating..." && \
-  apt-get update &>> /var/log/do-debian-setup.txt && \
-  echo "Upgrading..." && \
-  DEBIAN_FRONTEND=noninteractive apt-get upgrade -y &>> /var/log/do-debian-setup.txt && \
-  echo "Installing '"${PACKAGES[@]}"'..." && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y '"${PACKAGES[@]}"' &>> /var/log/do-debian-setup.txt && \
-  echo "Adding user deployer..."
-  adduser deployer --disabled-password --gecos "" &>> /var/log/do-debian-setup.txt && \
-  adduser deployer sudo &>> /var/log/do-debian-setup.txt && \
-  echo "deployer:password" | chpasswd && \
-  passwd -e deployer &>> /var/log/do-debian-setup.txt && \
-  mkdir /home/deployer/.ssh && \
-  cp /root/.ssh/authorized_keys /home/deployer/.ssh/ && \
-  chmod 600 /home/deployer/.ssh/authorized_keys && \
-  chown -R deployer:deployer /home/deployer/.ssh && \
-  chmod 700 /home/deployer/.ssh && \
-  echo "Adding swap..."
-  sudo dd if=/dev/zero of=/swapfile bs=1024 count=1024k &>> /var/log/do-debian-setup.txt && \
-  sudo mkswap /swapfile &>> /var/log/do-debian-setup.txt && \
-  sudo swapon /swapfile
-  echo "/swapfile   none  swap  sw  0   0" >> /etc/fstab && \
-  echo 10 > /proc/sys/vm/swappiness && \
-  echo "vm.swappiness = 10" >> /etc/sysctl.conf && \
-  chown root:root /swapfile && \
-  chmod 0600 /swapfile && \
-  sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config && \
-  service ssh reload &>> /var/log/do-debian-setup.txt'
+droplet=$1
 
-if [[ "$?" != "0" ]] ; then
-  echo -e "\nSomething went wrong with the install..."
-  echo "You can check the log here:"
-  echo -e "\tssh root@$1 'cat /var/log/do-debian-setup.txt'"
-  exit 2
-fi
+r() {
+    ssh root@$droplet "DEBIAN_FRONTEND=noninteractive $1 &>> /var/log/do-debian-setup.txt"
+}
 
-echo -e "\n\tYou may now login to $1 as deployer"
+l() {
+    ssh root@$droplet "DEBIAN_FRONTEND=noninteractive $1"
+}
+
+echo "Updating..."
+r "apt-get update"
+
+echo "Upgrading..."
+r "apt-get upgrade --yes"
+
+echo "Installing ${PACKAGES[@]}"
+r "apt-get install --yes ${PACKAGES[@]}"
+
+echo "Adding user deployer..."
+r "adduser deployer --disabled-password --gecos ''"
+r "adduser deployer sudo"
+r 'echo "deployer:password" | chpasswd'
+r "passwd -e deployer"
+
+echo "Copying root keys to deployer"
+r "mkdir /home/deployer/.ssh"
+r "cp /root/.ssh/authorized_keys /home/deployer/.ssh/"
+r "chmod 600 /home/deployer/.ssh/authorized_keys"
+r "chown -R deployer:deployer /home/deployer/.ssh"
+r "chmod 700 /home/deployer/.ssh"
+
+echo "Adding swap..."
+r "dd if=/dev/zero of=/swapfile bs=1024 count=1024k"
+r "chmod 0600 /swapfile"
+r "mkswap /swapfile"
+r "swapon /swapfile"
+l 'echo "/swapfile   none  swap  sw  0   0" >> /etc/fstab'
+l "echo 10 > /proc/sys/vm/swappiness"
+l 'echo "vm.swappiness = 10" >> /etc/sysctl.conf'
+r "chown root:root /swapfile"
+
+echo "Disable root login"
+r 'sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config'
+r "service ssh reload"
+
+echo -e "\n\tYou may now login to $droplet as deployer"
 echo -e "\tyou must set your password on first login.\n"
 echo -e "\t\tDefault password is \"password\"\n"
-echo -e "\tssh deployer@$1"
+echo -e "\tssh deployer@$droplet"
