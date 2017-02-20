@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-PACKAGES=(curl git htop vim)
+PACKAGES=(curl git htop vim mariadb-server)
 
 if [[ "${1}x" == "x" ]] ; then
   echo -e "\nSYNOPSIS"
@@ -18,14 +18,27 @@ l() {
     ssh root@$droplet "DEBIAN_FRONTEND=noninteractive $1"
 }
 
+
+echo "Adding mariadb apt repo"
+r "apt-get install --yes software-properties-common"
+r "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
+r "add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirror.lstn.net/mariadb/repo/10.1/debian jessie main'"
+
 echo "Updating..."
 r "apt-get update"
 
 echo "Upgrading..."
 r "apt-get upgrade --yes"
 
-echo "Installing ${PACKAGES[@]}"
-r "apt-get install --yes ${PACKAGES[@]}"
+db_pw=$(openssl rand -base64 15)
+echo "debconf for mariadb"
+r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password password $db_pw'"
+r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $db_pw'"
+
+echo $db_pw
+
+echo "Installing packages..."
+r "apt-get install --yes curl git htop vim mariadb-server"
 
 echo "Adding user deployer..."
 r "adduser deployer --disabled-password --gecos ''"
