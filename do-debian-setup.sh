@@ -1,7 +1,5 @@
 #! /usr/bin/env bash
 
-PACKAGES=(curl git htop vim mariadb-server)
-
 if [[ "${1}x" == "x" ]] ; then
   echo -e "\nSYNOPSIS"
   echo -e "\tdo-debian-setup.sh [IP_ADDR | HOST_NAME]"
@@ -38,13 +36,17 @@ r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_ag
 echo $db_pw
 
 echo "Installing packages..."
-r "apt-get install --yes curl git htop vim mariadb-server"
+r "apt-get install --yes curl git htop vim mariadb-server build-essential"
+
 
 echo "Adding user deployer..."
 r "adduser deployer --disabled-password --gecos ''"
 r "adduser deployer sudo"
 r 'echo "deployer:password" | chpasswd'
 r "passwd -e deployer"
+
+echo "my.cf"
+l "printf '%s\n' '[client]' 'user = root' 'password=$db_pw' > /home/deployer/.my.cf"
 
 echo "Copying root keys to deployer"
 r "mkdir /home/deployer/.ssh"
