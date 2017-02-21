@@ -75,6 +75,17 @@ r "git clone https://github.com/andrewhood125/php-7-debian.git"
 r "cd php-7-debian && ./build.sh"
 r "cd php-7-debian && ./install.sh"
 
+echo "Installing composer"
+r "wget https://getcomposer.org/installer"
+r "php installer --install-dir=/usr/local/bin --filename=composer"
+
+# Install node from binaries because omg it takes forever to build
+r "wget https://nodejs.org/dist/v7.5.0/node-v7.5.0-linux-x64.tar.xz"
+r "tar xf node-v7.5.0-linux-x64.tar.xz"
+r "mv node-v7.5.0-linux-x64 /usr/local/node"
+r "ln -s /usr/local/node/bin/node /usr/local/bin/node"
+r "ln -s /usr/local/node/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm"
+
 echo "Disable root login"
 r 'sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config'
 r "service ssh reload"
