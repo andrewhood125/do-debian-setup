@@ -16,7 +16,6 @@ l() {
     ssh root@$droplet "DEBIAN_FRONTEND=noninteractive $1"
 }
 
-
 echo "Adding mariadb apt repo"
 r "apt-get install --yes software-properties-common"
 r "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
@@ -28,14 +27,13 @@ r "apt-get update"
 echo "Upgrading..."
 r "apt-get upgrade --yes"
 
-db_pw=$(openssl rand -base64 15)
 echo "debconf for mariadb"
+db_pw=$(openssl rand -base64 15)
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password password $db_pw'"
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $db_pw'"
 
 echo "Installing packages..."
-r "apt-get install --yes curl git htop vim mariadb-server build-essential"
-
+r "apt-get install --yes curl git htop vim mariadb-server build-essential nginx"
 
 echo "Adding user deployer..."
 r "adduser deployer --disabled-password --gecos ''"
@@ -43,8 +41,8 @@ r "adduser deployer sudo"
 r 'echo "deployer:password" | chpasswd'
 r "passwd -e deployer"
 
-echo "my.cf"
-l "printf '%s\n' '[client]' 'user = root' 'password=$db_pw' > /home/deployer/.my.cf"
+echo "my.cnf"
+l "printf '%s\n' '[client]' 'user = root' 'password=$db_pw' > /home/deployer/.my.cnf"
 
 echo "Copying root keys to deployer"
 r "mkdir /home/deployer/.ssh"
@@ -62,6 +60,20 @@ l 'echo "/swapfile   none  swap  sw  0   0" >> /etc/fstab'
 l "echo 10 > /proc/sys/vm/swappiness"
 l 'echo "vm.swappiness = 10" >> /etc/sysctl.conf'
 r "chown root:root /swapfile"
+
+echo "Installing openssl from source"
+l 'echo "/usr/local/lib/x86_64-linux-gnu" >> /etc/ld.so.conf.d/x86_64-linux-gnu.conf'
+r "ldconfig"
+r "wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0e.tar.gz"
+r "tar xf OpenSSL_1_1_0e.tar.gz"
+r "cd openssl-OpenSSL_1_1_0e && ./config"
+r "cd openssl-OpenSSL_1_1_0e && make"
+r "cd openssl-OpenSSL_1_1_0e && make install"
+
+echo "Installing php7 from source"
+r "git clone https://github.com/andrewhood125/php-7-debian.git"
+r "cd php-7-debian && ./build.sh"
+r "cd php-7-debian && ./install.sh"
 
 echo "Disable root login"
 r 'sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config'
