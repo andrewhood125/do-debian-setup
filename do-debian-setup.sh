@@ -9,6 +9,7 @@ fi
 droplet=$1
 
 r() {
+    echo "$1"
     ssh root@$droplet "DEBIAN_FRONTEND=noninteractive $1 &>> /var/log/do-debian-setup.txt"
 }
 
@@ -28,9 +29,9 @@ echo "Upgrading..."
 r "apt-get upgrade --yes"
 
 echo "debconf for mariadb"
-db_pw=$(openssl rand -base64 15)
-r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password password $db_pw'"
-r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $db_pw'"
+root_db_pw=$(openssl rand -base64 15)
+r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password password $root_db_pw'"
+r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $root_db_pw'"
 
 echo "Installing packages..."
 r "apt-get install --yes curl git htop vim mariadb-server build-essential nginx"
@@ -42,7 +43,11 @@ r 'echo "deployer:password" | chpasswd'
 r "passwd -e deployer"
 
 echo "my.cnf"
-l "printf '%s\n' '[client]' 'user = root' 'password=$db_pw' > /home/deployer/.my.cnf"
+deployer_db_pw=$(openssl rand -base64 15)
+l "printf '%s\n' '[client]' 'user = root' 'password = $root_db_pw' > .my.cnf"
+l "printf '%s\n' '[client]' 'user = deployer' 'password = $deployer_db_pw' > /home/deployer/.my.cnf"
+r "mysql -e \"CREATE USER 'deployer'@'localhost' IDENTIFIED BY 'secret';\""
+r "mysql -e \"GRANT ALL ON *.* TO 'deployer'@'localhost' IDENTIFIED BY 'secret' WITH GRANT OPTION;\""
 
 echo "Copying root keys to deployer"
 r "mkdir /home/deployer/.ssh"
