@@ -4,7 +4,7 @@ Althought it could as easily be used for any Debian install.
   
 Output can be found in `/var/log/do-debian-setup.txt`  
 
->**Note:**The power of source is time consuming.
+>**Note:** The power of source is time consuming.
 
 What it does
 ------------
