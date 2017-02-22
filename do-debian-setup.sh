@@ -39,8 +39,9 @@ r "passwd -e deployer"
 deployer_db_pw=$(openssl rand -base64 15)
 l "printf '%s\n' '[client]' 'user = root' 'password = $root_db_pw' > .my.cnf"
 l "printf '%s\n' '[client]' 'user = deployer' 'password = $deployer_db_pw' > /home/deployer/.my.cnf"
-r "mysql -e \"CREATE USER 'deployer'@'localhost' IDENTIFIED BY 'secret';\""
-r "mysql -e \"GRANT ALL ON *.* TO 'deployer'@'localhost' IDENTIFIED BY 'secret' WITH GRANT OPTION;\""
+r "mysql -e \"CREATE USER 'deployer'@'localhost' IDENTIFIED BY '$deployer_db_pw';\""
+r "mysql -e \"GRANT ALL ON *.* TO 'deployer'@'localhost' IDENTIFIED BY '$deployer_db_pw' WITH GRANT OPTION;\""
+r "chown deployer:deployer /home/deployer/.my.cnf"
 
 r "mkdir /home/deployer/.ssh"
 r "cp /root/.ssh/authorized_keys /home/deployer/.ssh/"
