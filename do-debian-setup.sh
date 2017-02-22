@@ -21,6 +21,7 @@ l() {
 r "apt-get install --yes software-properties-common"
 r "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
 r "add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirror.lstn.net/mariadb/repo/10.1/debian jessie main'"
+l 'echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list'
 
 r "apt-get update"
 r "apt-get upgrade --yes"
@@ -30,6 +31,7 @@ r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password pa
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $root_db_pw'"
 
 r "apt-get install --yes curl git htop vim mariadb-server build-essential"
+r "apt-get install --yes certbot -t jessie-backports"
 
 r "adduser deployer --disabled-password --gecos ''"
 r "adduser deployer sudo"
@@ -70,6 +72,7 @@ r "git clone https://github.com/andrewhood125/php-7-debian.git"
 r "cd php-7-debian && ./build.sh"
 r "cd php-7-debian && ./install.sh"
 r "sed -i 's/www-data/deployer/g' /usr/local/php7/etc/php-fpm.d/www.conf"
+r "service php7-fpm restart"
 
 # pcre
 r "wget https://ftp.pcre.org/pub/pcre/pcre-8.40.tar.gz"
@@ -82,7 +85,7 @@ r "tar xf zlib-1.2.11.tar.gz"
 # nginx
 r "wget http://nginx.org/download/nginx-1.11.10.tar.gz"
 r "tar xf nginx-1.11.10.tar.gz"
-r "cd nginx-1.11.10 && ./configure --http-log-path=/var/log/nginx --user=deployer --group=deployer --with-http_ssl_module --with-pcre=../pcre-8.40 --with-zlib=../zlib-1.2.11"
+r "cd nginx-1.11.10 && ./configure --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log --with-debug --with-pcre-jit --with-http_ssl_module --with-pcre=../pcre-8.40 --with-zlib=../zlib-1.2.11"
 r "cd nginx-1.11.10 && make"
 r "cd nginx-1.11.10 && make install"
 r "sudo ln -s /usr/local/nginx/sbin/nginx /usr/local/sbin/nginx"
@@ -95,6 +98,7 @@ r "mkdir -p /etc/nginx/sites-available"
 r "rm /usr/local/nginx/conf/nginx.conf"
 scp nginx.conf root@$droplet:/usr/local/nginx/conf/
 scp default root@$droplet:/etc/nginx/sites-available/
+
 
 r "wget https://getcomposer.org/installer"
 r "php installer --install-dir=/usr/local/bin --filename=composer"
