@@ -20,4 +20,4 @@ What it does
 Usage
 -----
 From your development machine run..  
-`bash <(curl -sSL http://git.io/pq7F) ` `DROPLET_IP_ADDR`
+`./do-debian-setup.sh` `DROPLET_IP_ADDR`
