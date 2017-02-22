@@ -23,7 +23,6 @@ r "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
 r "add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirror.lstn.net/mariadb/repo/10.1/debian jessie main'"
 
 r "apt-get update"
-
 r "apt-get upgrade --yes"
 
 root_db_pw=$(openssl rand -base64 15)
@@ -69,6 +68,32 @@ r "cd openssl-OpenSSL_1_1_0e && make install"
 r "git clone https://github.com/andrewhood125/php-7-debian.git"
 r "cd php-7-debian && ./build.sh"
 r "cd php-7-debian && ./install.sh"
+r "sed -i 's/www-data/deployer/g' /usr/local/php7/etc/php-fpm.d/www.conf"
+
+# pcre
+r "wget https://ftp.pcre.org/pub/pcre/pcre-8.40.tar.gz"
+r "tar xf pcre-8.40.tar.gz"
+
+# zlib
+r "wget http://www.zlib.net/zlib-1.2.11.tar.gz"
+r "tar xf zlib-1.2.11.tar.gz"
+
+# nginx
+r "wget http://nginx.org/download/nginx-1.11.10.tar.gz"
+r "tar xf nginx-1.11.10.tar.gz"
+r "cd nginx-1.11.10 && ./configure --http-log-path=/var/log/nginx --user=deployer --group=deployer --with-http_ssl_module --with-pcre=../pcre-8.40 --with-zlib=../zlib-1.2.11"
+r "cd nginx-1.11.10 && make"
+r "cd nginx-1.11.10 && make install"
+r "sudo ln -s /usr/local/nginx/sbin/nginx /usr/local/sbin/nginx"
+
+scp nginx.service root@$droplet:/etc/systemd/system/
+r "systemctl enable nginx"
+r "service nginx start"
+r "mkdir -p /etc/nginx/sites-enabled"
+r "mkdir -p /etc/nginx/sites-available"
+r "rm /usr/local/nginx/conf/nginx.conf"
+scp nginx.conf root@$droplet:/usr/local/nginx/conf/
+scp default root@$droplet:/etc/nginx/sites-available/
 
 r "wget https://getcomposer.org/installer"
 r "php installer --install-dir=/usr/local/bin --filename=composer"
