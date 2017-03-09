@@ -23,6 +23,9 @@ r "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
 r "add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirror.lstn.net/mariadb/repo/10.1/debian jessie main'"
 l 'echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list'
 
+r "curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -"
+l 'echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list'
+
 r "apt-get update"
 r "apt-get upgrade --yes"
 
@@ -30,7 +33,7 @@ root_db_pw=$(openssl rand -base64 15)
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password password $root_db_pw'"
 r "debconf-set-selections <<< 'mariadb-server-10.0 mysql-server/root_password_again password $root_db_pw'"
 
-r "apt-get install --yes curl git htop vim mariadb-server build-essential"
+r "apt-get install --yes curl git htop vim mariadb-server build-essential yarn"
 r "apt-get install --yes certbot -t jessie-backports"
 
 r "adduser deployer --disabled-password --gecos ''"
